@@ -13,7 +13,13 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 const FLOOR_MARGIN = 20
 const SETTINGS_STORAGE_KEY = 'opencatclaw.settings'
 const DEFAULT_SETTINGS = { hungerIntervalSeconds: 5 }
-const TARGET_TEXT = 'salmon salmon salmon'
+const FISH_OPTIONS = [
+  'salmon', 'tuna', 'cod', 'trout', 'halibut', 'mackerel', 'sardine', 'anchovy',
+  'snapper', 'tilapia', 'carp', 'bass', 'grouper', 'eel', 'swordfish', 'haddock',
+  'pollock', 'catfish', 'perch', 'mahi', 'barracuda', 'pike', 'kingfish', 'whiting'
+]
+
+let targetText = ''
 
 type Settings = typeof DEFAULT_SETTINGS
 
@@ -158,8 +164,20 @@ function updateSettingsVisibility(): void {
   settingsPanel.classList.toggle('open', settingsOpen)
 }
 
+function generateTargetText(): string {
+  const picked = Array.from({ length: 5 }, () => FISH_OPTIONS[Math.floor(Math.random() * FISH_OPTIONS.length)])
+  return picked.join(' ')
+}
+
+function resetTargetText(): void {
+  targetText = generateTargetText()
+  userTyped = ''
+  typingInput.value = ''
+  renderPrompt()
+}
+
 function renderPrompt(): void {
-  const chars = TARGET_TEXT.split('').map((char, index) => {
+  const chars = targetText.split('').map((char, index) => {
     let status: TypedStatus = 'pending'
     if (index < userTyped.length) {
       status = userTyped[index].toLowerCase() === char.toLowerCase() ? 'correct' : 'incorrect'
@@ -232,11 +250,9 @@ function exitMinigame(): void {
   } else {
     bowlVisible = false
   }
-  userTyped = ''
-  typingInput.value = ''
+  resetTargetText()
   updateBowlVisibility()
   updateMinigameVisibility()
-  renderPrompt()
   cat.setChaseTarget(hungry ? { x: mouseX, y: mouseY } : null)
   updateOverlayInteractionForPoint(mouseX, mouseY)
   typingInput.blur()
@@ -246,11 +262,9 @@ function enterMinigame(): void {
   if (!hungry || minigameActive) return
   minigameActive = true
   bowlVisible = false
-  userTyped = ''
-  typingInput.value = ''
+  resetTargetText()
   updateBowlVisibility()
   updateMinigameVisibility()
-  renderPrompt()
   cat.setChaseTarget(null)
   updateOverlayInteractionForPoint(mouseX, mouseY)
   stopHungerTimer()
@@ -262,13 +276,10 @@ function finishFeeding(): void {
   hungry = false
   bowlVisible = false
   minigameActive = false
-  userTyped = ''
-  typingInput.value = ''
+  resetTargetText()
   updateBowlVisibility()
   updateMinigameVisibility()
-  renderPrompt()
   cat.setChaseTarget(null)
-  cat.setHungry(false)
   cat.setHungry(false)
   updateOverlayInteractionForPoint(mouseX, mouseY)
   typingInput.blur()
@@ -303,7 +314,7 @@ function handleKeyDown(event: KeyboardEvent): void {
   event.preventDefault()
   userTyped += event.key.toLowerCase()
   renderPrompt()
-  if (userTyped === TARGET_TEXT) {
+  if (userTyped === targetText) {
     finishFeeding()
   }
 }
@@ -368,6 +379,7 @@ window.addEventListener('mouseup', () => {
 window.addEventListener('keydown', handleKeyDown)
 
 document.body.tabIndex = 0
+targetText = generateTargetText()
 renderPrompt()
 updateBowlVisibility()
 updateMinigameVisibility()
