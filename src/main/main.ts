@@ -49,6 +49,11 @@ function createOverlayWindow(): void {
 }
 
 app.whenReady().then(() => {
+  if (process.platform === 'darwin') {
+    app.setActivationPolicy('regular')
+    app.dock?.show()
+  }
+
   createOverlayWindow()
   agentManager = new AgentManager()
   agentManager.start()
