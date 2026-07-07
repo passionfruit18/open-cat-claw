@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron'
+import { app, BrowserWindow, ipcMain, screen } from 'electron'
 import { join } from 'path'
 import { AgentManager } from './agent'
 
@@ -52,6 +52,17 @@ app.whenReady().then(() => {
   createOverlayWindow()
   agentManager = new AgentManager()
   agentManager.start()
+
+  // The renderer toggles this as the cursor enters/leaves the cat, so the
+  // window is only interactive when there's actually something to click.
+  ipcMain.on('overlay:set-interactive', (_event, interactive: boolean) => {
+    if (!overlayWindow) return
+    if (interactive) {
+      overlayWindow.setIgnoreMouseEvents(false)
+    } else {
+      overlayWindow.setIgnoreMouseEvents(true, { forward: true })
+    }
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

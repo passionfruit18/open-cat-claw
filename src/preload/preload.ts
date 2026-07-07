@@ -1,7 +1,9 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 const overlayApi = {
-  // Placeholder surface for renderer <-> main IPC as agent features land.
+  setInteractive(interactive: boolean): void {
+    ipcRenderer.send('overlay:set-interactive', interactive)
+  }
 }
 
 contextBridge.exposeInMainWorld('overlay', overlayApi)
