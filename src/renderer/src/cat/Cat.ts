@@ -141,7 +141,7 @@ export class Cat {
 
   updateDrag(px: number, py: number, clampX: (x: number) => number): void {
     this.x = clampX(px - this.dragOffset.x)
-    this.anchorY = Math.min(py - this.dragOffset.y, this.floorY)
+    this.anchorY = clamp(py - this.dragOffset.y, CAT_TOTAL_HEIGHT, this.floorY)
     this.dragHistory.push({ x: px, y: py, t: performance.now() })
     if (this.dragHistory.length > 6) this.dragHistory.shift()
   }
@@ -197,6 +197,10 @@ export class Cat {
       case 'falling':
         this.vy += GRAVITY * dt
         this.anchorY += this.vy * dt
+        if (this.anchorY < CAT_TOTAL_HEIGHT) {
+          this.anchorY = CAT_TOTAL_HEIGHT
+          this.vy = Math.max(this.vy, 0)
+        }
         this.x = clampX(this.x + this.vx * dt)
         this.vx *= Math.max(0, 1 - 0.6 * dt)
         this.lean = clamp(this.vx * 0.0022, -0.4, 0.4)
