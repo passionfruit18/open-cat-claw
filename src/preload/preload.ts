@@ -3,6 +3,9 @@ import { contextBridge, ipcRenderer } from 'electron'
 const overlayApi = {
   setInteractive(interactive: boolean): void {
     ipcRenderer.send('overlay:set-interactive', interactive)
+  },
+  focusWindow(): void {
+    ipcRenderer.send('overlay:focus-window')
   }
 }
 

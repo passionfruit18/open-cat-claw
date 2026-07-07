@@ -21,7 +21,7 @@ function createOverlayWindow(): void {
     fullscreenable: false,
     hasShadow: false,
     skipTaskbar: true,
-    focusable: false,
+    focusable: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
@@ -67,6 +67,11 @@ app.whenReady().then(() => {
     } else {
       overlayWindow.setIgnoreMouseEvents(true, { forward: true })
     }
+  })
+
+  ipcMain.on('overlay:focus-window', () => {
+    if (!overlayWindow) return
+    overlayWindow.focus()
   })
 
   app.on('activate', () => {

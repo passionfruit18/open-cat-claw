@@ -131,6 +131,10 @@ export class Cat {
     )
   }
 
+  getPosition(): { x: number; y: number } {
+    return { x: this.x, y: this.anchorY }
+  }
+
   beginDrag(px: number, py: number): void {
     this.state = 'dragging'
     this.dragOffset = { x: px - this.x, y: py - this.anchorY }
@@ -180,6 +184,12 @@ export class Cat {
     }
   }
 
+  private chaseTarget: { x: number; y: number } | null = null
+
+  setChaseTarget(target: { x: number; y: number } | null): void {
+    this.chaseTarget = target
+  }
+
   update(dt: number, clampX: (x: number) => number): void {
     this.t += dt
     this.blinkT += dt
@@ -222,6 +232,16 @@ export class Cat {
         this.lean += (clamp(dvx * 0.0018, -0.3, 0.3) - this.lean) * Math.min(1, dt * 10)
         break
       }
+    }
+
+    if (this.chaseTarget) {
+      const dx = this.chaseTarget.x - this.x
+      const dy = this.chaseTarget.y - this.anchorY
+      const stepX = clamp(dx, -220 * dt, 220 * dt)
+      const stepY = clamp(dy, -220 * dt, 220 * dt)
+      this.x = clampX(this.x + stepX)
+      this.anchorY = clamp(this.anchorY + stepY, CAT_TOTAL_HEIGHT, this.floorY)
+      this.lean += (clamp(stepX / 140, -0.35, 0.35) - this.lean) * Math.min(1, dt * 8)
     }
 
     const targetSwing = this.state === 'dragging' || this.state === 'falling' ? -this.lean * 1.6 : 0
