@@ -106,6 +106,8 @@ export class Cat {
   private dragOffset: Point = { x: 0, y: 0 }
   private dragHistory: DragSample[] = []
   private poofs: Poof[] = []
+  private hungry = false
+  private hungerPhase = 0
 
   constructor(
     private floorY: number,
@@ -190,9 +192,19 @@ export class Cat {
     this.chaseTarget = target
   }
 
+  setHungry(hungry: boolean): void {
+    this.hungry = hungry
+    if (!hungry) {
+      this.hungerPhase = 0
+    }
+  }
+
   update(dt: number, clampX: (x: number) => number): void {
     this.t += dt
     this.blinkT += dt
+    if (this.hungry) {
+      this.hungerPhase += dt * 12
+    }
 
     for (let i = this.poofs.length - 1; i >= 0; i--) {
       this.poofs[i].update(dt)
@@ -279,9 +291,14 @@ export class Cat {
 
     const alert = this.state === 'falling' || this.state === 'dragging'
     const tipLift = this.state === 'idle' && !this.reduceMotion ? tailLift(this.t) : alert ? 0.9 : 0.5
+    const hungryJump = this.hungry ? Math.sin(this.hungerPhase) * 10 : 0
+    const hungrySwipeAngle = this.hungry ? (this.hungerPhase * 1.15) % (Math.PI * 2) : 0
+
+    ctx.translate(0, -hungryJump)
 
     this.drawTail(ctx, tipLift, alert)
     this.drawBody(ctx)
+    this.drawHungryPaw(ctx, hungrySwipeAngle)
     this.drawHead(ctx, alert)
 
     ctx.restore()
@@ -311,6 +328,25 @@ export class Cat {
     ctx.arc(tipX, tipY, 7.2, 0, Math.PI * 2)
     ctx.fillStyle = '#cf7638'
     ctx.fill()
+  }
+
+  private drawHungryPaw(ctx: CanvasRenderingContext2D, swipe: number): void {
+    if (!this.hungry) return
+    ctx.save()
+    ctx.translate(18, -82)
+    ctx.rotate(swipe)
+    ctx.strokeStyle = '#e2853f'
+    ctx.lineWidth = 10
+    ctx.lineCap = 'round'
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.quadraticCurveTo(12, 8, 20, 18)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(20, 18, 6, 0, Math.PI * 2)
+    ctx.fillStyle = '#e2853f'
+    ctx.fill()
+    ctx.restore()
   }
 
   private drawBody(ctx: CanvasRenderingContext2D): void {

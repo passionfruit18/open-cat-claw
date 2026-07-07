@@ -179,6 +179,7 @@ function startHungerTimer(): void {
       bowlVisible = true
       updateBowlVisibility()
       cat.setChaseTarget({ x: mouseX, y: mouseY })
+      cat.setHungry(true)
       setInteractive(false)
     }
   }, hungerIntervalSeconds * 1000)
@@ -267,6 +268,8 @@ function finishFeeding(): void {
   updateMinigameVisibility()
   renderPrompt()
   cat.setChaseTarget(null)
+  cat.setHungry(false)
+  cat.setHungry(false)
   updateOverlayInteractionForPoint(mouseX, mouseY)
   typingInput.blur()
   showEatAnimation()
